@@ -1,0 +1,18 @@
+version: "3"
+services:
+  product_service: 
+    build: .
+    image: product_service
+    container_name: product_service
+    ports:
+      - 9090:9090
+    environment:
+      - MONGODB_URI=mongodb://product_service_db
+    depends_on:
+      - product_service_db  
+  product_service_db:
+    restart: always
+    image: mongo:latest
+    container_name: product_service_db
+    ports:
+      - "27017:27017"
