@@ -1,27 +1,32 @@
 package com.web.product.service.impl;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.web.product.repository.ProductRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.web.product.model.Product;
-import com.web.product.repository.ProductRespository;
+import com.web.product.repository.ProductRepository;
 import com.web.product.service.ProductService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 	
-	@Autowired
-	private ProductRespository productRespository;
+	private final ProductRepository productRepository;
+
+	public ProductServiceImpl(ProductRepository productRepository) {
+		this.productRepository = productRepository;
+	}
 
 	@Override
 	public boolean createProduct(Product product) {
-		productRespository.save(product);
+		product.setIsActive(true);
+		productRepository.save(product);
 		Product saveProduct = getProduct(product.getProductCode());
 		if (saveProduct.getProductCode().equals(product.getProductCode())) {
 			return true;
@@ -31,8 +36,8 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public Product getProduct(String productCode) {
-		Product getProduct = productRespository.findByProductCode(productCode);
-		if (getProduct != null) {
+		Product getProduct = productRepository.findByProductCode(productCode);
+		if (getProduct != null && getProduct.getIsActive()) {
 			return getProduct;
 		}
 		return null;
@@ -40,15 +45,37 @@ public class ProductServiceImpl implements ProductService {
 
 	@Override
 	public List<Product> getProducts(int page, int size) {
-		if (page == 0) page = 1;
-		if (size == 0) size = 10;
 		Pageable paging = PageRequest.of(page, size);
-		Page<Product> getPagedProducts = productRespository.findAll(paging);
+		Page<Product> getPagedProducts = productRepository.findAll(paging);
 		if (getPagedProducts.hasContent()) {
-			return getPagedProducts.getContent();
+			List<Product> products = getPagedProducts.getContent()
+										.stream().filter(x -> x.getIsActive())
+										.collect(Collectors.toList());
+			return products;
 		}
 		return new ArrayList<Product>();
 	}
 
+	@Override
+	public boolean updateProduct(String productCode, Product product) {
+		Product existingProduct = getProduct(productCode);
+		if (existingProduct != null) {
+			if (!product.getProductCode().isEmpty()) {
+				productRepository.save(product);
+				return true;
+			}
+		}
+		return false;
+	}
 
+	@Override
+	public boolean deleteProduct(String productCode) {
+		Product existingProduct = getProduct(productCode);
+		if (existingProduct != null) {
+			existingProduct.setIsActive(false);
+			productRepository.save(existingProduct);
+			return true;
+		}
+		return false;
+	}
 }

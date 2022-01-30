@@ -10,4 +10,6 @@ public interface ProductService {
 	boolean createProduct(Product product);
 	Product getProduct(String productCode);
 	List<Product> getProducts(int page, int size);
+	boolean updateProduct(String productCode, Product product);
+	boolean deleteProduct(String productCode);
 }

@@ -36,7 +36,10 @@ public class ProductController {
 	}
 
     @GetMapping
-    public ResponseEntity<List<Product>> getProducts(@RequestParam("size") int size, @RequestParam("page")  int page) {
+    public ResponseEntity<List<Product>> getProducts(@RequestParam(name = "size", required = false) int size,
+													 @RequestParam(name = "page", required = false)  int page) {
+		if (page <= 0) page = 1;
+		if (size <= 0) size = 10;
         List<Product> getProducts = productService.getProducts(size, page);
         if (getProducts != null) {
             return new ResponseEntity<>(getProducts, new HttpHeaders(), HttpStatus.OK);
@@ -47,10 +50,28 @@ public class ProductController {
 	@GetMapping("/{product_code}")
 	public ResponseEntity<Product> getProduct(@PathVariable("product_code") String productCode) {
 		Product getProduct = productService.getProduct(productCode);
-		System.out.println("product code: " + productCode);
 		if (getProduct != null) {
 			return ResponseEntity.ok(getProduct);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
+
+	@PutMapping("/{product_code}")
+	public ResponseEntity<HttpStatus> updateProduct(@PathVariable("product_code") String productCode,@RequestBody Product product) {
+		boolean updatedProduct = productService.updateProduct(productCode, product);
+		if (updatedProduct) {
+			return ResponseEntity.ok(HttpStatus.CREATED);
+		}
+		return ResponseEntity.ok(HttpStatus.BAD_REQUEST);
+	}
+
+	@DeleteMapping("/{product_code}")
+	public ResponseEntity<HttpStatus> deleteProduct(@PathVariable("product_code") String productCode) {
+		boolean updatedProduct = productService.deleteProduct(productCode);
+		if (updatedProduct) {
+			return ResponseEntity.ok(HttpStatus.CREATED);
+		}
+		return ResponseEntity.ok(HttpStatus.BAD_REQUEST);
+	}
+
 }
