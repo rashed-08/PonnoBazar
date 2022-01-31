@@ -22,17 +22,17 @@ import lombok.Setter;
 public class Product {
 
 	@Id
-	private long id;
-	@NotBlank(message = "Product name cannot be blank.")
-	@Min(value = 2, message = "Product name cannot be less than 2 characters")
-	@Max(value = 20, message = "Product name cannot be greater than 20 characters")
-	private String productName;
 	@NotBlank(message = "Product name cannot be blank.")
 	@Min(value = 2, message = "Product name cannot be less than 2 characters")
 	@Max(value = 8, message = "Product name cannot be greater than 8 characters")
 	private String productCode;
+	@NotBlank(message = "Product name cannot be blank.")
+	@Min(value = 2, message = "Product name cannot be less than 2 characters")
+	@Max(value = 20, message = "Product name cannot be greater than 20 characters")
+	private String productName;
 	private String skuCode;
 	private String unitPrice;
 	private String sellPrice;
 	private String image;
+	private Boolean isActive;
 }
