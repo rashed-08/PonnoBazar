@@ -13,13 +13,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "product")
-public class Product {
+public class Product implements Serializable {
 
 	@Id
 	@NotBlank(message = "Product name cannot be blank.")

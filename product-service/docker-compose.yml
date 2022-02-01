@@ -1,6 +1,6 @@
 version: "3"
 services:
-  product_service: 
+  product_service:
     build: .
     image: product_service
     container_name: product_service
@@ -9,10 +9,16 @@ services:
     environment:
       - MONGODB_URI=mongodb://product_service_db
     depends_on:
-      - product_service_db  
+      - product_service_db
+      - redis
   product_service_db:
     restart: always
     image: mongo:latest
     container_name: product_service_db
     ports:
       - "27017:27017"
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"

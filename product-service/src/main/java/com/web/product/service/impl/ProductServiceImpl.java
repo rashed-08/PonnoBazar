@@ -1,6 +1,9 @@
 package com.web.product.service.impl;
 
 import com.web.product.repository.ProductRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +27,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@CacheEvict(value = "prodcut", allEntries = true)
 	public boolean createProduct(Product product) {
 		product.setIsActive(true);
 		productRepository.save(product);
@@ -35,6 +39,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@Cacheable("product")
 	public Product getProduct(String productCode) {
 		Product getProduct = productRepository.findByProductCode(productCode);
 		if (getProduct != null && getProduct.getIsActive()) {
@@ -44,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@Cacheable("product")
 	public List<Product> getProducts(int page, int size) {
 		Pageable paging = PageRequest.of(page, size);
 		Page<Product> getPagedProducts = productRepository.findAll(paging);
@@ -57,6 +63,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@CachePut(value = "product", key = "#product.productCode")
 	public boolean updateProduct(String productCode, Product product) {
 		Product existingProduct = getProduct(productCode);
 		if (existingProduct != null) {
@@ -69,6 +76,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@CacheEvict(value = "product", allEntries = true)
 	public boolean deleteProduct(String productCode) {
 		Product existingProduct = getProduct(productCode);
 		if (existingProduct != null) {
