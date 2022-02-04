@@ -1,5 +1,10 @@
 package com.web.product.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.modelmapper.ModelMapper;
 import com.web.product.repository.ProductRepository;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -9,31 +14,35 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.web.product.dto.ProductDto;
 import com.web.product.model.Product;
 import com.web.product.repository.ProductRepository;
 import com.web.product.service.ProductService;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 	
 	private final ProductRepository productRepository;
+	private final ModelMapper modelMapper;
 
-	public ProductServiceImpl(ProductRepository productRepository) {
+	public ProductServiceImpl(ProductRepository productRepository, ModelMapper modelMapper) {
 		this.productRepository = productRepository;
+		this.modelMapper = modelMapper;
 	}
 
 	@Override
-	@CacheEvict(value = "prodcut", allEntries = true)
-	public boolean createProduct(Product product) {
-		product.setIsActive(true);
-		productRepository.save(product);
-		Product saveProduct = getProduct(product.getProductCode());
-		if (saveProduct.getProductCode().equals(product.getProductCode())) {
-			return true;
+  @CacheEvict(value = "prodcut", allEntries = true)
+	public boolean createProduct(ProductDto productDto) {
+		Product product = modelMapper.map(productDto, Product.class);
+		Product existedProduct = getProduct(product.getProductCode());
+		if (existedProduct == null) {
+			product.setIsActive(true);
+			productRepository.save(product);
+			Product saveProduct = getProduct(product.getProductCode());
+			if (saveProduct.getProductCode().equals(product.getProductCode())) {
+				return true;
+			}
+			return false;
 		}
 		return false;
 	}
@@ -42,13 +51,22 @@ public class ProductServiceImpl implements ProductService {
 	@Cacheable("product")
 	public Product getProduct(String productCode) {
 		Product getProduct = productRepository.findByProductCode(productCode);
-		if (getProduct != null && getProduct.getIsActive()) {
+		if (getProduct != null) {
 			return getProduct;
 		}
 		return null;
 	}
 
 	@Override
+  @Cacheable("product")
+	public boolean checkProductExists(String productCode) {
+		Product product = getProduct(productCode);
+		if (product != null && product.getIsActive()) {
+			return true;
+		}
+		return false;
+	}
+
 	@Cacheable("product")
 	public List<Product> getProducts(int page, int size) {
 		Pageable paging = PageRequest.of(page, size);
