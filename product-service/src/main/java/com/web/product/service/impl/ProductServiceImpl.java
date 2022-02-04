@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.modelmapper.ModelMapper;
+import com.web.product.repository.ProductRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +31,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+  @CacheEvict(value = "prodcut", allEntries = true)
 	public boolean createProduct(ProductDto productDto) {
 		Product product = modelMapper.map(productDto, Product.class);
 		Product existedProduct = getProduct(product.getProductCode());
@@ -43,6 +48,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@Cacheable("product")
 	public Product getProduct(String productCode) {
 		Product getProduct = productRepository.findByProductCode(productCode);
 		if (getProduct != null) {
@@ -52,6 +58,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+  @Cacheable("product")
 	public boolean checkProductExists(String productCode) {
 		Product product = getProduct(productCode);
 		if (product != null && product.getIsActive()) {
@@ -60,7 +67,7 @@ public class ProductServiceImpl implements ProductService {
 		return false;
 	}
 
-	@Override
+	@Cacheable("product")
 	public List<Product> getProducts(int page, int size) {
 		Pageable paging = PageRequest.of(page, size);
 		Page<Product> getPagedProducts = productRepository.findAll(paging);
@@ -74,6 +81,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@CachePut(value = "product", key = "#product.productCode")
 	public boolean updateProduct(String productCode, Product product) {
 		Product existingProduct = getProduct(productCode);
 		if (existingProduct != null) {
@@ -86,6 +94,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
+	@CacheEvict(value = "product", allEntries = true)
 	public boolean deleteProduct(String productCode) {
 		Product existingProduct = getProduct(productCode);
 		if (existingProduct != null) {

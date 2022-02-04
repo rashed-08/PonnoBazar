@@ -35,17 +35,15 @@ public class ProductController {
 	}
 
     @GetMapping
-    public ResponseEntity<List<Product>> getProducts(@RequestParam(name = "size", required = false) int size,
-													 @RequestParam(name = "page", required = false)  int page) {
-		if (page <= 0) page = 1;
-		if (size <= 0) size = 10;
+    public ResponseEntity<List<Product>> getProducts(@RequestParam(defaultValue = "0")  int page,
+													 @RequestParam(defaultValue = "3") int size) {
         List<Product> getProducts = productService.getProducts(size, page);
         if (getProducts != null) {
-            return new ResponseEntity<>(getProducts, new HttpHeaders(), HttpStatus.OK);
+            return new ResponseEntity<>(getProducts, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-	
+
 	@GetMapping("/{product_code}")
 	public ResponseEntity<Product> getProduct(@PathVariable("product_code") String productCode) {
 		Product getProduct = productService.getProduct(productCode);

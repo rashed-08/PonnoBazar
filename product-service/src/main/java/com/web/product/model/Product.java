@@ -12,12 +12,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 @Getter
 @Setter
 @Data
 @NoArgsConstructor
 @Document(collection = "product")
-public class Product {
+public class Product implements Serializable {
 
 	@Id
 	private String id;
