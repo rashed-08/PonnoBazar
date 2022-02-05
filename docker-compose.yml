@@ -1,5 +1,13 @@
 version: "3"
 services:
+  eureka_service:
+    build:
+      context: eureka-service
+      dockerfile: Dockerfile
+    image: eureka_service
+    container_name: eureka_service
+    ports:
+      - "8761:8761"
   product_service:
     build: 
       context: product-service
@@ -13,6 +21,7 @@ services:
     depends_on:
       - product_service_db
       - redis
+      - eureka_service
   inventory_service:
     build:
       context: inventory-service
@@ -20,14 +29,11 @@ services:
     image: inventory_service
     restart: unless-stopped
     container_name: inventory_service
-#    environment:
-#      - SPRING_DATASOURCE_URL=jdbc:mysql://inventory_service_db:3306/inventory_service?createDatabaseIfNotExist=true
-#      - SPRING_DATASOURCE_USERNAME=inventory
-#      - SPRING_DATASOURCE_PASSWORD=inventory
     ports:
       - "9091:9091"
     depends_on:
       - inventory_service_db
+      - eureka_service
   product_service_db:
     restart: always
     image: mongo:latest
