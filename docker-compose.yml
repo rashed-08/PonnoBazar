@@ -18,10 +18,10 @@ services:
       - "9090:9090"
     environment:
       - MONGODB_URI=mongodb://product_service_db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka_service:8761/eureka
     depends_on:
       - product_service_db
       - redis
-      - eureka_service
   inventory_service:
     build:
       context: inventory-service
@@ -29,6 +29,8 @@ services:
     image: inventory_service
     restart: unless-stopped
     container_name: inventory_service
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka_service:8761/eureka
     ports:
       - "9091:9091"
     depends_on:
