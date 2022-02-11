@@ -1,13 +1,26 @@
-version: "3"
+version: "3.8"
 services:
-  eureka_service:
+  eureka-service:
     build:
       context: eureka-service
       dockerfile: Dockerfile
     image: eureka_service
     container_name: eureka_service
+    hostname: eureka-service
     ports:
-      - "8761:8761"
+      - "80:8761"
+  gateway_service:
+    build:
+      context: gateway-service
+      dockerfile: Dockerfile
+    image: gateway_service
+    container_name: gateway_service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-service
+      - product_service
+      - inventory_service
   product_service:
     build: 
       context: product-service
@@ -18,10 +31,10 @@ services:
       - "9090:9090"
     environment:
       - MONGODB_URI=mongodb://product_service_db
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka_service:8761/eureka
     depends_on:
       - product_service_db
       - redis
+      - eureka-service
   inventory_service:
     build:
       context: inventory-service
@@ -29,13 +42,13 @@ services:
     image: inventory_service
     restart: unless-stopped
     container_name: inventory_service
-    environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka_service:8761/eureka
+    #    environment:
+    #  - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka_service:8761/eureka
     ports:
       - "9091:9091"
     depends_on:
       - inventory_service_db
-      - eureka_service
+      - eureka-service
   product_service_db:
     restart: always
     image: mongo:latest
