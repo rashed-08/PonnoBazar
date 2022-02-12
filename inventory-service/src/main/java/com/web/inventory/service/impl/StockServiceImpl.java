@@ -5,6 +5,7 @@ import com.web.inventory.dto.StockDTO;
 import com.web.inventory.model.Stock;
 import com.web.inventory.repository.StockRepository;
 import com.web.inventory.service.StockService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;

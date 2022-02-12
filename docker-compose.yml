@@ -13,6 +13,8 @@ services:
     depends_on:
       - product_service_db
       - redis
+    networks:
+      - backend
   inventory_service:
     build:
       context: inventory-service
@@ -20,7 +22,7 @@ services:
     image: inventory_service
     restart: unless-stopped
     container_name: inventory_service
-#    environment:
+#    environmenddt:
 #      - SPRING_DATASOURCE_URL=jdbc:mysql://inventory_service_db:3306/inventory_service?createDatabaseIfNotExist=true
 #      - SPRING_DATASOURCE_USERNAME=inventory
 #      - SPRING_DATASOURCE_PASSWORD=inventory
@@ -28,12 +30,16 @@ services:
       - "9091:9091"
     depends_on:
       - inventory_service_db
+    networks:
+      - backend
   product_service_db:
     restart: always
     image: mongo:latest
     container_name: product_service_db
     ports:
       - "27017:27017"
+    networks:
+      - backend
   inventory_service_db:
     image: mysql:8
     restart: unless-stopped
@@ -45,8 +51,16 @@ services:
       - MYSQL_DATABASE=inventory_service
     ports:
       - "3306:3306"
+    networks:
+      - backend
   redis:
     image: redis:latest
     container_name: redis
     ports:
       - "6379:6379"
+    networks:
+      - backend
+networks:
+  backend:
+    name: backend
+    driver: bridge
