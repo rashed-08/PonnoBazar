@@ -18,18 +18,17 @@ import java.util.List;
 public class ProductController {
 	
 	private final ProductServiceImpl productService;
-	private final ModelMapper modelMapper;
+	
 
 	@Autowired
 	public ProductController(ProductServiceImpl productService, ModelMapper modelMapper) {
 		this.productService = productService;
-		this.modelMapper = modelMapper;
 	}
 
 	@PostMapping
 	public ResponseEntity<HttpStatus> createProduct(@RequestBody ProductDto productDto) {
-		Product product = modelMapper.map(productDto, Product.class);
-		if (productService.createProduct(product)) {
+		boolean isProductSaved = productService.createProduct(productDto);
+		if (isProductSaved) {
 			return ResponseEntity.ok(HttpStatus.CREATED);
 		}
 		return ResponseEntity.ok(HttpStatus.BAD_GATEWAY);
@@ -50,6 +49,15 @@ public class ProductController {
 		Product getProduct = productService.getProduct(productCode);
 		if (getProduct != null) {
 			return ResponseEntity.ok(getProduct);
+		}
+		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+	}
+
+	@GetMapping("/exist/{product_code}")
+	public ResponseEntity<Boolean> checkProductExists(@PathVariable("product_code") String productCode) {
+		boolean checkProductExists = productService.checkProductExists(productCode);
+		if (checkProductExists) {
+			return ResponseEntity.ok(checkProductExists);
 		}
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
