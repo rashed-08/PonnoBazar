@@ -7,6 +7,7 @@ import javax.validation.constraints.NotBlank;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,11 +19,11 @@ import java.io.Serializable;
 @Setter
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Document(collection = "product")
 public class Product implements Serializable {
 
 	@Id
-	private String id;
 	@NotBlank(message = "Product name cannot be blank.")
 	@Min(value = 2, message = "Product name cannot be less than 2 characters")
 	@Max(value = 8, message = "Product name cannot be greater than 8 characters")
@@ -36,5 +37,4 @@ public class Product implements Serializable {
 	private String sellPrice;
 	private String image;
 	private Boolean isActive;
-	
 }
