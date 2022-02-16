@@ -9,6 +9,8 @@ services:
     hostname: eureka-service
     ports:
       - "80:8761"
+    networks:
+      - backend
   gateway_service:
     build:
       context: gateway-service
@@ -21,6 +23,8 @@ services:
       - eureka-service
       - product_service
       - inventory_service
+    networks:
+      - backend
   product_service:
     build: 
       context: product-service
