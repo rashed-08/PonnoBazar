@@ -1,5 +1,6 @@
 package com.web.inventory.service.impl;
 
+import com.netflix.discovery.converters.Auto;
 import com.web.inventory.client.ProductServiceClient;
 import com.web.inventory.dto.StockDTO;
 import com.web.inventory.model.Stock;
@@ -14,11 +15,16 @@ import java.util.Date;
 public class StockServiceImpl implements StockService {
 
     private final StockRepository stockRepository;
-    private final ProductServiceClient productServiceClient;
+    private ProductServiceClient productServiceClient;
 
+    @Autowired
     public StockServiceImpl(StockRepository stockRepository, ProductServiceClient productServiceClient) {
         this.stockRepository = stockRepository;
         this.productServiceClient = productServiceClient;
+    }
+
+    public StockServiceImpl(StockRepository stockRepository) {
+        this.stockRepository = stockRepository;
     }
 
     @Override
