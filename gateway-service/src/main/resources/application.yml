@@ -16,12 +16,12 @@ spring:
         - id: product-service
           uri: lb://product-service
           predicates:
-            - Path=/api/products
+            - Path=/api/products/**
         - id: inventory-service
           uri: lb://inventory-service
           predicates:
-            - Path=/api/inventory
+            - Path=/api/inventory/**
   profiles:
-    active: test
+    active: dev
 server:
   port: 8080
