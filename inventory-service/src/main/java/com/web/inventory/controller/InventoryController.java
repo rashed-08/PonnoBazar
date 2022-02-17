@@ -22,7 +22,7 @@ public class InventoryController {
     @PostMapping
     public ResponseEntity<HttpStatus> createStock(@RequestBody StockDTO stockDTO)
     {
-        boolean created = stockService.CreateStock(stockDTO);
+        boolean created = stockService.createStock(stockDTO);
         if (created) {
             return ResponseEntity.ok(HttpStatus.CREATED);
         }
