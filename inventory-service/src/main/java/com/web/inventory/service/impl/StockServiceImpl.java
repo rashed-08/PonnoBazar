@@ -14,21 +14,17 @@ import java.util.Date;
 @Service
 public class StockServiceImpl implements StockService {
 
-    private final StockRepository stockRepository;
-    private ProductServiceClient productServiceClient;
-
     @Autowired
-    public StockServiceImpl(StockRepository stockRepository, ProductServiceClient productServiceClient) {
-        this.stockRepository = stockRepository;
-        this.productServiceClient = productServiceClient;
-    }
+    private StockRepository stockRepository;
+    @Autowired
+    private ProductServiceClient productServiceClient;
 
     public StockServiceImpl(StockRepository stockRepository) {
         this.stockRepository = stockRepository;
     }
 
     @Override
-    public boolean CreateStock(StockDTO stockDTO) {
+    public boolean createStock(StockDTO stockDTO) {
         // check product available
         boolean checkProductExists = productServiceClient.checkProduct(stockDTO.getProductCode());
         if (checkProductExists) {

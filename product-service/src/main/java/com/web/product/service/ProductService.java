@@ -12,4 +12,5 @@ public interface ProductService {
 	List<Product> getProducts(int page, int size);
 	boolean updateProduct(String productCode, Product product);
 	boolean deleteProduct(String productCode);
+	boolean checkProductExists(String productCode);
 }
