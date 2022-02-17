@@ -50,4 +50,15 @@ public class StockServiceImpl implements StockService {
         }
         return false;
     }
+
+    @Override
+    public Stock getStock(String productCode) {
+        Stock stock = stockRepository.findStockByProductCode(productCode);
+        if (stock != null) {
+            return stock;
+        }
+        return null;
+    }
+
+
 }
