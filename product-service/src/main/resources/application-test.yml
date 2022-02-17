@@ -1,13 +1,19 @@
 spring:
-  datasource:
-    username: sa
-    password: sa
-    url: jdbc:h2:file:./data/demo;DB_CLOSE_DELAY=-1
-    driver-class-name: org.h2.Driver
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/product_service
+      # run local a mongo container
+      # docker run -p 27017:27017 mongo
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
+  redis:
+    host: localhost
+    port: 6379
+    # run local a redis container
+    # docker run -p 6379:6379 redis
+
 eureka:
   client:
     fetch-registry: true

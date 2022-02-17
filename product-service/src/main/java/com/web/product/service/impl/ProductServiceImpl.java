@@ -27,7 +27,7 @@ public class ProductServiceImpl implements ProductService {
 	}
 
 	@Override
-	@CacheEvict(value = "prodcut", allEntries = true)
+	@CacheEvict(value = "product", allEntries = true)
 	public boolean createProduct(Product product) {
 		product.setIsActive(true);
 		productRepository.save(product);
@@ -46,6 +46,15 @@ public class ProductServiceImpl implements ProductService {
 			return getProduct;
 		}
 		return null;
+	}
+
+	@Override
+	public boolean checkProductExists(String productCode) {
+		Product product = getProduct(productCode);
+		if (product != null) {
+			return true;
+		}
+		return false;
 	}
 
 	@Override

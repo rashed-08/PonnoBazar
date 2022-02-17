@@ -2,9 +2,9 @@ name: Product_Service
 
 on:
   push:
-    branches: [ master ]
+    branches: [ inventory_service, product_service ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, development, staging ]
 
 jobs:
   build:
@@ -12,4 +12,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: cd product-service && docker-compose up -d
+      run: docker-compose up -d
