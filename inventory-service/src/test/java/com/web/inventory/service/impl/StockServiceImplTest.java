@@ -29,7 +29,6 @@ class StockServiceImplTest {
     }
 
     @Test
-    @Disabled
     void createStock() throws ParseException {
         // given
         StockDTO stockDTO = new StockDTO("test-001", 20);
