@@ -54,6 +54,15 @@ public class ProductController {
 		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 	}
 
+	@GetMapping("/exist/{product_code}")
+	public boolean checkProductExists(@PathVariable("product_code") String productCode) {
+		boolean checkProductExists = productService.checkProductExists(productCode);
+		if (checkProductExists) {
+			return true;
+		}
+		return false;
+	}
+
 	@PutMapping("/{product_code}")
 	public ResponseEntity<HttpStatus> updateProduct(@PathVariable("product_code") String productCode,@RequestBody Product product) {
 		boolean updatedProduct = productService.updateProduct(productCode, product);
