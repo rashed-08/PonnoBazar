@@ -21,7 +21,11 @@ spring:
           uri: lb://inventory-service
           predicates:
             - Path=/api/inventory/**
+    config:
+      uri: http://localhost:8888
   profiles:
     active: dev
+  config:
+    import: 'configserver:'
 server:
   port: 8080

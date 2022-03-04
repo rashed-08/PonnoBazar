@@ -8,7 +8,7 @@ spring:
           uri: git@github.com:rashed-08/config-service.git
           clone-on-start: true
           search-paths:
-            - '*service'
+            - '{profile}'
           default-label: master
 server:
   port: 8888
