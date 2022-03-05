@@ -29,7 +29,7 @@ public class StockServiceImpl implements StockService {
         boolean checkProductExists = productServiceClient.checkProduct(stockDTO.getProductCode());
         if (checkProductExists) {
             // check if product stock already available
-            Stock existedStock = stockRepository.findStockByProductCode(stockDTO.getProductCode());
+            Stock existedStock = getStock(stockDTO.getProductCode());
             if (existedStock == null) {
                 Stock newStock = new Stock();
                 newStock.setProductCode(stockDTO.getProductCode());
@@ -38,7 +38,7 @@ public class StockServiceImpl implements StockService {
                 //save new stock
                 stockRepository.save(newStock);
                 // check saved successfully
-                Stock savedStock = stockRepository.findStockByProductCode(stockDTO.getProductCode());
+                Stock savedStock = getStock(stockDTO.getProductCode());
                 if (savedStock.getProductCode().equals(stockDTO.getProductCode())) {
                     return true;
                 } else {
@@ -70,14 +70,23 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
+    public boolean isStockAvailable(StockDTO stockDTO) {
+        Stock stock = getStock(stockDTO.getProductCode());
+        if (stock.getQuantity() > 0 && stockDTO.getQuantity() < stock.getQuantity()) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
     public boolean updateStock(StockDTO stockDTO) {
-        Stock stock = stockRepository.findStockByProductCode(stockDTO.getProductCode());
+        Stock stock = getStock(stockDTO.getProductCode());
         if (stock != null) {
             stock.setProductCode(stockDTO.getProductCode());
             stock.setQuantity(stockDTO.getQuantity());
             stock.setUpdatedDate(new Date());
             stockRepository.save(stock);
-            Stock updatedStock = stockRepository.findStockByProductCode(stockDTO.getProductCode());
+            Stock updatedStock = getStock(stockDTO.getProductCode());
             if (updatedStock.getProductCode().equals(stockDTO.getProductCode())) {
                 return true;
             } else {
@@ -89,10 +98,10 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public boolean deleteStock(String productCode) {
-        Stock stock = stockRepository.findStockByProductCode(productCode);
+        Stock stock = getStock(productCode);
         if (stock != null) {
             stockRepository.delete(stock);
-            Stock deletedStock = stockRepository.findStockByProductCode(productCode);
+            Stock deletedStock = getStock(productCode);
             if (deletedStock == null) {
                 return true;
             }

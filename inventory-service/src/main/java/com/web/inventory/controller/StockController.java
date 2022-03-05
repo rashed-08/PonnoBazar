@@ -56,6 +56,15 @@ public class StockController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    @GetMapping(path = "/available")
+    public ResponseEntity<Boolean> isStockAvailable(@RequestBody StockDTO stockDTO) {
+        boolean isStockAvailable = stockService.isStockAvailable(stockDTO);
+        if (isStockAvailable) {
+            return ResponseEntity.ok(true);
+        }
+        return ResponseEntity.ok(false);
+    }
+
     @DeleteMapping(path = "/{product_code}")
     public ResponseEntity<Boolean> deleteStock(@PathVariable("product_code") String productCode) {
         boolean deleteStock = stockService.deleteStock(productCode);

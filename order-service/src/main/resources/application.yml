@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: order-service
+  config:
+    import: 'configserver:'
+  cloud:
+    config:
+      uri: http://localhost:8888
+  datasource:
+    username: sa
+    password: sa
+    url: jdbc:h2:file:./data/demo;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+server:
+  port: 9093
