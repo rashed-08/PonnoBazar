@@ -9,7 +9,7 @@ public interface StockService {
     boolean createStock(StockDTO stockDTO);
     List<Stock> getAllStock();
     Stock getStock(String productCode);
-    boolean isStockAvailable(StockDTO stockDTO);
-    boolean updateStock(StockDTO stockDTO);
+    boolean isStockAvailable(String productCode, Integer quantity);
+    boolean updateStock(String productCode, Integer quantity);
     boolean deleteStock(String productCode);
 }

@@ -29,15 +29,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public TxResponse placeOrder(OrderDto orderDto) {
-        List<StockDto> stocks = null;
-        orderDto.getOrderLineItems().forEach(x -> {
-            StockDto stock = new StockDto();
-            stock.setQuantity(x.getQuantity());
-            stock.setProductCode(x.getProductCode());
-            stocks.add(stock);
-        });
         boolean isProductAvailable = orderDto.getOrderLineItems().stream().allMatch(x -> productFeignClient.checkProduct( x.getProductCode()));
-        boolean isStockAvailable = stocks.stream().allMatch(x -> inventoryFeignClient.isStockAvailable(x));
+        boolean isStockAvailable = orderDto.getOrderLineItems().stream().allMatch(x -> inventoryFeignClient.isStockAvailable(x.getProductCode(), x.getQuantity()));
         if (isProductAvailable && isStockAvailable) {
             return new TxResponse("1222dfs", "order success.");
         }

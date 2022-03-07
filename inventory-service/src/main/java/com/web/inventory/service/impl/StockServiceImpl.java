@@ -70,28 +70,32 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public boolean isStockAvailable(StockDTO stockDTO) {
-        Stock stock = getStock(stockDTO.getProductCode());
-        if (stock.getQuantity() > 0 && stockDTO.getQuantity() < stock.getQuantity()) {
+    public boolean isStockAvailable(String productCode, Integer quantity) {
+        Stock stock = getStock(productCode);
+        if (stock.getQuantity() > 0 && quantity< stock.getQuantity()) {
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean updateStock(StockDTO stockDTO) {
-        Stock stock = getStock(stockDTO.getProductCode());
+    public boolean updateStock(String productCode, Integer quantity) {
+        Stock stock = getStock(productCode);
         if (stock != null) {
-            stock.setProductCode(stockDTO.getProductCode());
-            stock.setQuantity(stockDTO.getQuantity());
-            stock.setUpdatedDate(new Date());
-            stockRepository.save(stock);
-            Stock updatedStock = getStock(stockDTO.getProductCode());
-            if (updatedStock.getProductCode().equals(stockDTO.getProductCode())) {
-                return true;
-            } else {
-                return false;
+            boolean isStockAvailable = isStockAvailable(productCode, quantity);
+            if (isStockAvailable) {
+                stock.setProductCode(productCode);
+                stock.setQuantity(quantity);
+                stock.setUpdatedDate(new Date());
+                stockRepository.save(stock);
+                Stock updatedStock = getStock(productCode);
+                if (updatedStock.getProductCode().equals(productCode)) {
+                    return true;
+                } else {
+                    return false;
+                }
             }
+            return false;
         }
         return false;
     }
