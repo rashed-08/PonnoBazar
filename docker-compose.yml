@@ -41,6 +41,20 @@ services:
       - eureka-service
     networks:
       - backend
+  order_service:
+    build: 
+      context: order-service
+      dockerfile: Dockerfile
+    image: order_service
+    container_name: order_service
+    ports:
+      - "9093:9093"
+    depends_on:
+      - product_service
+      - inventory_service
+      - eureka-service
+    networks:
+      - backend
   inventory_service:
     build:
       context: inventory-service
