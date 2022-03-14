@@ -6,9 +6,10 @@ services:
       dockerfile: Dockerfile
     image: eureka_service
     container_name: eureka_service
+    restart: unless-stopped
     hostname: eureka-service
     ports:
-      - "80:8761"
+      - "8761:8761"
     networks:
       - backend
   gateway_service:
@@ -17,6 +18,7 @@ services:
       dockerfile: Dockerfile
     image: gateway_service
     container_name: gateway_service
+    restart: unless-stopped
     ports:
       - "8080:8080"
     depends_on:
@@ -31,6 +33,7 @@ services:
       dockerfile: Dockerfile
     image: product_service
     container_name: product_service
+    restart: unless-stopped
     ports:
       - "9090:9090"
     environment:
@@ -47,6 +50,7 @@ services:
       dockerfile: Dockerfile
     image: order_service
     container_name: order_service
+    restart: unless-stopped
     ports:
       - "9093:9093"
     depends_on:
