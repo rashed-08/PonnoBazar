@@ -10,5 +10,6 @@ spring:
           search-paths:
             - '{profile}'
           default-label: master
+          strict-host-key-checking: false
 server:
   port: 8888

@@ -40,7 +40,9 @@ public class StockController {
 
     @PutMapping
     public ResponseEntity<Boolean> updateStock(@RequestBody StockDTO stockDTO) {
-        boolean updateStock = stockService.updateStock(stockDTO);
+        String productCode = stockDTO.getProductCode();
+        int quantity = stockDTO.getQuantity();
+        boolean updateStock = stockService.updateStock(productCode, quantity);
         if (updateStock) {
             return ResponseEntity.ok(true);
         }
@@ -54,6 +56,15 @@ public class StockController {
             return ResponseEntity.ok(currentStock);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping(path = "/available/{product_code}/{quantity}")
+    public ResponseEntity<Boolean> isStockAvailable(@PathVariable("product_code") String productCode,@PathVariable("quantity") Integer quantity) {
+        boolean isStockAvailable = stockService.isStockAvailable(productCode, quantity);
+        if (isStockAvailable) {
+            return ResponseEntity.ok(true);
+        }
+        return ResponseEntity.ok(false);
     }
 
     @DeleteMapping(path = "/{product_code}")
