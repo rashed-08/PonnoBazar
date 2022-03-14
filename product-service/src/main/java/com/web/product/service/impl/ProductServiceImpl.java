@@ -1,6 +1,7 @@
 package com.web.product.service.impl;
 
 import com.web.product.repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -22,6 +23,7 @@ public class ProductServiceImpl implements ProductService {
 	
 	private final ProductRepository productRepository;
 
+	@Autowired
 	public ProductServiceImpl(ProductRepository productRepository) {
 		this.productRepository = productRepository;
 	}
@@ -41,9 +43,9 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	@Cacheable("product")
 	public Product getProduct(String productCode) {
-		Product getProduct = productRepository.findByProductCode(productCode);
-		if (getProduct != null && getProduct.getIsActive()) {
-			return getProduct;
+		Product product = productRepository.findByProductCode(productCode);
+		if (product != null && product.getIsActive()) {
+			return product;
 		}
 		return null;
 	}
