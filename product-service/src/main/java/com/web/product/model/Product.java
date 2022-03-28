@@ -33,8 +33,8 @@ public class Product implements Serializable {
 	@Max(value = 20, message = "Product name cannot be greater than 20 characters")
 	private String productName;
 	private String skuCode;
-	private String unitPrice;
-	private String sellPrice;
+	private int unitPrice;
+	private int sellPrice;
 	private String image;
 	private Boolean isActive;
 }
