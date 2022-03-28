@@ -14,10 +14,14 @@ import java.util.List;
 @Service
 public class StockServiceImpl implements StockService {
 
-    @Autowired
     private StockRepository stockRepository;
-    @Autowired
     private ProductServiceClient productServiceClient;
+
+    @Autowired
+    public StockServiceImpl(StockRepository stockRepository, ProductServiceClient productServiceClient) {
+        this.stockRepository = stockRepository;
+        this.productServiceClient = productServiceClient;
+    }
 
     public StockServiceImpl(StockRepository stockRepository) {
         this.stockRepository = stockRepository;

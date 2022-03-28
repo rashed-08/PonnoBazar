@@ -3,14 +3,18 @@ package com.web.product.controller;
 import com.web.product.service.impl.ProductServiceImpl;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import com.web.product.dto.ProductDto;
 import com.web.product.model.Product;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -18,31 +22,34 @@ import java.util.List;
 public class ProductController {
 	
 	private final ProductServiceImpl productService;
-	private final ModelMapper modelMapper;
 
 	@Autowired
-	public ProductController(ProductServiceImpl productService, ModelMapper modelMapper) {
+	public ProductController(ProductServiceImpl productService) {
 		this.productService = productService;
-		this.modelMapper = modelMapper;
 	}
 
 	@PostMapping
-	public ResponseEntity<HttpStatus> createProduct(@RequestBody ProductDto productDto) {
-		Product product = modelMapper.map(productDto, Product.class);
-		if (productService.createProduct(product)) {
+	public ResponseEntity<HttpStatus> createProduct(@Valid @RequestBody ProductDto productDto, BindingResult result) {
+		if (result.hasErrors()) {
+			if (productDto.getProductName() == null || productDto.getProductName().equals("")) {
+				throw new RuntimeException("Product name cannot be empty");
+			}
+			throw new RuntimeException("Internal server error!");
+		}
+		boolean productCreated = productService.createProduct(productDto);
+		if (productCreated) {
 			return ResponseEntity.ok(HttpStatus.CREATED);
 		}
-		return ResponseEntity.ok(HttpStatus.BAD_GATEWAY);
+		return null;
 	}
 
     @GetMapping
-    public ResponseEntity<List<Product>> getProducts(@RequestParam(defaultValue = "0")  int page,
-													 @RequestParam(defaultValue = "3") int size) {
-        List<Product> getProducts = productService.getProducts(size, page);
+    public ResponseEntity<List<Product>> getProducts(Pageable pageable) {
+        List<Product> getProducts = productService.getProducts(pageable);
         if (getProducts != null) {
             return new ResponseEntity<>(getProducts, HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return null;
     }
 
 	@GetMapping("/{product_code}")
@@ -51,7 +58,7 @@ public class ProductController {
 		if (getProduct != null) {
 			return ResponseEntity.ok(getProduct);
 		}
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		return null;
 	}
 
 	@GetMapping("/exist/{product_code}")
@@ -69,7 +76,7 @@ public class ProductController {
 		if (updatedProduct) {
 			return ResponseEntity.ok(HttpStatus.CREATED);
 		}
-		return ResponseEntity.ok(HttpStatus.BAD_REQUEST);
+		return null;
 	}
 
 	@DeleteMapping("/{product_code}")
@@ -78,7 +85,7 @@ public class ProductController {
 		if (updatedProduct) {
 			return ResponseEntity.ok(HttpStatus.CREATED);
 		}
-		return ResponseEntity.ok(HttpStatus.BAD_REQUEST);
+		return null;
 	}
 
 }
