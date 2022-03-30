@@ -82,6 +82,7 @@ services:
     networks:
       - backend
   inventory_service_db:
+    platform: linux/amd64
     image: mysql:8
     restart: unless-stopped
     container_name: inventory_service_db
