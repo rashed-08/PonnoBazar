@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "api/inventory")
+@RequestMapping(path = "api/v1/inventory")
 public class StockController {
 
     private final StockServiceImpl stockService;
@@ -42,7 +42,7 @@ public class StockController {
     public ResponseEntity<Boolean> updateStock(@RequestBody StockDTO stockDTO) {
         String productCode = stockDTO.getProductCode();
         int quantity = stockDTO.getQuantity();
-        boolean updateStock = stockService.updateStock(productCode, quantity);
+        boolean updateStock = stockService.updateStockAfterPurchase(productCode, quantity);
         if (updateStock) {
             return ResponseEntity.ok(true);
         }
