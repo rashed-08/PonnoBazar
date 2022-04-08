@@ -27,11 +27,8 @@ public class ProductController {
 
 	@PostMapping
 	public ResponseEntity<HttpStatus> createProduct(@Valid @RequestBody ProductDto productDto) {
-		boolean productCreated = productService.createProduct(productDto);
-		if (productCreated) {
-			return ResponseEntity.ok(HttpStatus.CREATED);
-		}
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		productService.createProduct(productDto);
+		return ResponseEntity.ok(HttpStatus.CREATED);
 	}
 
     @GetMapping
