@@ -2,6 +2,9 @@ package com.web.inventory.service.impl;
 
 import com.web.inventory.client.ProductServiceClient;
 import com.web.inventory.dto.StockDTO;
+import com.web.inventory.exception.InternalServerErrorExceptionHandler;
+import com.web.inventory.exception.NotFoundException;
+import com.web.inventory.exception.RecordNotUpdateException;
 import com.web.inventory.model.Stock;
 import com.web.inventory.repository.StockRepository;
 import com.web.inventory.service.StockService;
@@ -33,7 +36,7 @@ public class StockServiceImpl implements StockService {
         boolean checkProductExists = productServiceClient.checkProduct(stockDTO.getProductCode());
         if (checkProductExists) {
             // check if product stock already available
-            Stock existedStock = getStock(stockDTO.getProductCode());
+            Stock existedStock = stockRepository.findStockByProductCode(stockDTO.getProductCode());
             if (existedStock == null) {
                 Stock newStock = new Stock();
                 newStock.setProductCode(stockDTO.getProductCode());
@@ -45,14 +48,12 @@ public class StockServiceImpl implements StockService {
                 Stock savedStock = getStock(stockDTO.getProductCode());
                 if (savedStock.getProductCode().equals(stockDTO.getProductCode())) {
                     return true;
-                } else {
-                    return false;
                 }
-            } else {
-                return false;
+                throw new InternalServerErrorExceptionHandler("Can't create product stock.");
             }
+            throw new InternalServerErrorExceptionHandler("Stock already added. Please update the stock.");
         }
-        return false;
+        throw new InternalServerErrorExceptionHandler("Can't fetch product.");
     }
 
     @Override
@@ -61,7 +62,7 @@ public class StockServiceImpl implements StockService {
         if (getAllStock.size() > 0) {
             return getAllStock;
         }
-        return null;
+        throw new NotFoundException("Stock list not found.");
     }
 
     @Override
@@ -70,7 +71,7 @@ public class StockServiceImpl implements StockService {
         if (stock != null) {
             return stock;
         }
-        return null;
+        throw new NotFoundException("Could not found stock.");
     }
 
     @Override
@@ -83,25 +84,57 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public boolean updateStock(String productCode, Integer quantity) {
-        Stock stock = getStock(productCode);
-        if (stock != null) {
-            boolean isStockAvailable = isStockAvailable(productCode, quantity);
-            if (isStockAvailable) {
-                stock.setProductCode(productCode);
-                stock.setQuantity(quantity);
+    public boolean updateStock(StockDTO stockDTO) {
+        boolean checkProductExists = productServiceClient.checkProduct(stockDTO.getProductCode());
+        if (checkProductExists) {
+            Stock stock = getStock(stockDTO.getProductCode());
+            if (stock != null) {
+                stock.setQuantity(stockDTO.getQuantity());
                 stock.setUpdatedDate(new Date());
                 stockRepository.save(stock);
-                Stock updatedStock = getStock(productCode);
-                if (updatedStock.getProductCode().equals(productCode)) {
+                Stock updatedStock = getStock(stockDTO.getProductCode());
+                if (updatedStock.getProductCode().equals(stockDTO.getProductCode())) {
                     return true;
-                } else {
-                    return false;
                 }
+                throw new InternalServerErrorExceptionHandler("Can't update stock");
             }
-            return false;
+            throw new InternalServerErrorExceptionHandler("Internal server error");
         }
-        return false;
+        throw new InternalServerErrorExceptionHandler("Can't fetch product.");
+    }
+
+    @Override
+    public boolean updateStockAfterPurchase(String productCode, Integer quantity) {
+        boolean checkProductExists = productServiceClient.checkProduct(productCode);
+        if (checkProductExists) {
+            Stock stock = getStock(productCode);
+            if (stock != null) {
+                boolean isStockAvailable = isStockAvailable(productCode, quantity);
+                if (isStockAvailable) {
+                    stock.setProductCode(productCode);
+                    int updatedQuantity = stockQuantityCalculation(stock, quantity);
+                    stock.setQuantity(updatedQuantity);
+                    stock.setUpdatedDate(new Date());
+                    stockRepository.save(stock);
+                    Stock updatedStock = getStock(productCode);
+                    if (updatedStock.getProductCode().equals(productCode)) {
+                        return true;
+                    }
+                }
+                throw new InternalServerErrorExceptionHandler("Can't update stock");
+            }
+            throw new InternalServerErrorExceptionHandler("Internal server error");
+        }
+        throw new InternalServerErrorExceptionHandler("Can't fetch product.");
+    }
+
+    private int stockQuantityCalculation(Stock stock, int quantity) {
+        int currentStock = stock.getQuantity();
+        if (currentStock > quantity) {
+            int updatedStock = currentStock - quantity;
+            return updatedStock;
+        }
+        throw new RecordNotUpdateException("Product stock cannot updated");
     }
 
     @Override
@@ -113,9 +146,9 @@ public class StockServiceImpl implements StockService {
             if (deletedStock == null) {
                 return true;
             }
-            return false;
+            throw new InternalServerErrorExceptionHandler("Can't delete stock");
         }
-        return false;
+        throw new InternalServerErrorExceptionHandler("Internal server error");
     }
 
 }

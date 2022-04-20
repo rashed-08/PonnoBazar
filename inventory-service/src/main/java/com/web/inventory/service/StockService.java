@@ -10,6 +10,7 @@ public interface StockService {
     List<Stock> getAllStock();
     Stock getStock(String productCode);
     boolean isStockAvailable(String productCode, Integer quantity);
-    boolean updateStock(String productCode, Integer quantity);
+    boolean updateStock(StockDTO stockDTO);
+    boolean updateStockAfterPurchase(String productCode, Integer quantity);
     boolean deleteStock(String productCode);
 }
