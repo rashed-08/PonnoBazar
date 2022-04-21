@@ -5,4 +5,5 @@ import com.orderservice.dto.TxResponse;
 
 public interface OrderService {
     TxResponse placeOrder(OrderDto orders);
+    boolean orderStatusUpdate(String message);
 }
