@@ -11,6 +11,6 @@ public interface StockService {
     Stock getStock(String productCode);
     boolean isStockAvailable(String productCode, Integer quantity);
     boolean updateStock(StockDTO stockDTO);
-    boolean updateStockAfterPurchase(String productCode, Integer quantity);
+    boolean updateStockAfterPurchase(Object object);
     boolean deleteStock(String productCode);
 }

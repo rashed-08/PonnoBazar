@@ -1,5 +1,7 @@
 package com.orderservice.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.orderservice.client.InventoryFeignClient;
 import com.orderservice.client.ProductFeignClient;
 import com.orderservice.dto.OrderDto;
@@ -20,25 +22,37 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final ProductFeignClient productFeignClient;
     private final InventoryFeignClient inventoryFeignClient;
-    private final KafkaTemplate<String, OrderDto> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ObjectMapper mapper;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             ProductFeignClient productFeignClient,
                             InventoryFeignClient inventoryFeignClient,
-                            KafkaTemplate<String, OrderDto> kafkaTemplate) {
+                            KafkaTemplate<String, Object> kafkaTemplate, ObjectMapper mapper) {
         this.orderRepository = orderRepository;
         this.productFeignClient = productFeignClient;
         this.inventoryFeignClient = inventoryFeignClient;
         this.kafkaTemplate = kafkaTemplate;
+        this.mapper = mapper;
     }
 
     @Override
-    public TxResponse placeOrder(OrderDto orderDto) {
-        boolean isProductAvailable = orderDto.getOrderLineItems().stream().allMatch(x -> productFeignClient.checkProduct( x.getProductCode()));
-        boolean isStockAvailable = orderDto.getOrderLineItems().stream().allMatch(x -> inventoryFeignClient.isStockAvailable(x.getProductCode(), x.getQuantity()));
+    public TxResponse placeOrder(OrderDto orderDto) throws JsonProcessingException {
+        //boolean isProductAvailable = orderDto.getOrderLineItems().stream().allMatch(x -> productFeignClient.checkProduct( x.getProductCode()));
+        boolean isProductAvailable = productFeignClient.checkProduct(orderDto.getProductCode());
+//        boolean isStockAvailable = orderDto.getOrderLineItems().stream().allMatch(x -> inventoryFeignClient.isStockAvailable(x.getProductCode(), x.getQuantity()));
+        boolean isStockAvailable = inventoryFeignClient.isStockAvailable(orderDto.getProductCode(), orderDto.getQuantity());
         if (isProductAvailable && isStockAvailable) {
             logger.info("-----------------Producing Order Message ------------------------");
-            kafkaTemplate.send("order", orderDto);
+            String request = mapper.writeValueAsString(orderDto);
+            System.out.println("String dto: " + request);
+            kafkaTemplate.send("order", "product", orderDto);
+            String purchase = orderStatusUpdate("");
+            System.out.println("Purchased successfully." + purchase);
+            if (purchase.equals("success")) {
+                return new TxResponse("200", "Order Successfully Created");
+            }
+            return new TxResponse("400", purchase);
         }
         return null;
     }
@@ -48,9 +62,13 @@ public class OrderServiceImpl implements OrderService {
             groupId = "groupId"
     )
     @Override
-    public boolean orderStatusUpdate(String message) {
+    public String orderStatusUpdate(String message) {
         logger.info("-------------------------Receiving inventory message -------------------");
         System.out.println("Message received: " + message);
-        return false;
+        String received = "successfully-purchased";
+        if (message.equals(received)) {
+            return "success";
+        }
+        return "Something went wrong! Could not make order!";
     }
 }
