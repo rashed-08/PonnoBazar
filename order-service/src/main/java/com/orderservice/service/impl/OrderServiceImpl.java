@@ -47,12 +47,7 @@ public class OrderServiceImpl implements OrderService {
             String request = mapper.writeValueAsString(orderDto);
             System.out.println("String dto: " + request);
             kafkaTemplate.send("order", "product", orderDto);
-            String purchase = orderStatusUpdate("");
-            System.out.println("Purchased successfully." + purchase);
-            if (purchase.equals("success")) {
-                return new TxResponse("200", "Order Successfully Created");
-            }
-            return new TxResponse("400", purchase);
+            return new TxResponse("200", "Order Successfully Created");
         }
         return null;
     }

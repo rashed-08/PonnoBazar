@@ -1,5 +1,8 @@
 package com.web.inventory.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.web.inventory.client.ProductServiceClient;
 import com.web.inventory.dto.StockDTO;
 import com.web.inventory.exception.InternalServerErrorExceptionHandler;
@@ -8,9 +11,9 @@ import com.web.inventory.exception.RecordNotUpdateException;
 import com.web.inventory.model.Stock;
 import com.web.inventory.repository.StockRepository;
 import com.web.inventory.service.StockService;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -27,14 +30,15 @@ public class StockServiceImpl implements StockService {
     private StockRepository stockRepository;
     private ProductServiceClient productServiceClient;
     private KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper mapper;
 
-    @Autowired
     public StockServiceImpl(StockRepository stockRepository,
                             KafkaTemplate<String, String> kafkaTemplate,
-                            ProductServiceClient productServiceClient) {
+                            ProductServiceClient productServiceClient, ObjectMapper mapper) {
         this.stockRepository = stockRepository;
         this.kafkaTemplate = kafkaTemplate;
         this.productServiceClient = productServiceClient;
+        this.mapper = mapper;
     }
 
     @Override
@@ -115,32 +119,33 @@ public class StockServiceImpl implements StockService {
             groupId = "groupId"
     )
     @Override
-    public boolean updateStockAfterPurchase(Object order) {
-        System.out.println(order.toString());
-        logger.info("-------------------------Producing inventory message--------------------------");
-        kafkaTemplate.send("inventory", "successfully-purchased");
-//        boolean checkProductExists = productServiceClient.checkProduct(productCode);
-//        if (checkProductExists) {
-//            Stock stock = getStock(productCode);
-//            if (stock != null) {
-//                boolean isStockAvailable = isStockAvailable(productCode, quantity);
-//                if (isStockAvailable) {
-//                    stock.setProductCode(productCode);
-//                    int updatedQuantity = stockQuantityCalculation(stock, quantity);
-//                    stock.setQuantity(updatedQuantity);
-//                    stock.setUpdatedDate(new Date());
-//                    stockRepository.save(stock);
-//                    Stock updatedStock = getStock(productCode);
-//                    if (updatedStock.getProductCode().equals(productCode)) {
-//                        return true;
-//                    }
-//                }
-//                throw new InternalServerErrorExceptionHandler("Can't update stock");
-//            }
-//            throw new InternalServerErrorExceptionHandler("Internal server error");
-//        }
-//        throw new InternalServerErrorExceptionHandler("Can't fetch product.");
-        return false;
+    public boolean updateStockAfterPurchase(ConsumerRecord<String, Object> order) throws JsonProcessingException {
+        String orders = (String) order.value();
+        JsonNode jsonNode = mapper.readTree(orders);
+        String productCode = jsonNode.get("productCode").asText();
+        int quantity = jsonNode.get("quantity").asInt();
+        boolean checkProductExists = productServiceClient.checkProduct(productCode);
+        if (checkProductExists) {
+            Stock stock = getStock(productCode);
+            if (stock != null) {
+                boolean isStockAvailable = isStockAvailable(productCode, quantity);
+                if (isStockAvailable) {
+                    stock.setProductCode(productCode);
+                    int updatedQuantity = stockQuantityCalculation(stock, quantity);
+                    stock.setQuantity(updatedQuantity);
+                    stock.setUpdatedDate(new Date());
+                    stockRepository.save(stock);
+                    Stock updatedStock = getStock(productCode);
+                    if (updatedStock.getProductCode().equals(productCode)) {
+                        kafkaTemplate.send("inventory", "successfully-purchased");
+                        return true;
+                    }
+                }
+                throw new InternalServerErrorExceptionHandler("Can't update stock");
+            }
+            throw new InternalServerErrorExceptionHandler("Internal server error");
+        }
+        throw new InternalServerErrorExceptionHandler("Can't fetch product.");
     }
 
     private int stockQuantityCalculation(Stock stock, int quantity) {
