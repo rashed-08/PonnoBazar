@@ -11,9 +11,12 @@ import com.web.inventory.exception.RecordNotUpdateException;
 import com.web.inventory.model.Stock;
 import com.web.inventory.repository.StockRepository;
 import com.web.inventory.service.StockService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import lombok.AllArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cloud.circuitbreaker.resilience4j.Resilience4JCircuitBreakerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -21,29 +24,22 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 
-
+@AllArgsConstructor
 @Service
 public class StockServiceImpl implements StockService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockServiceImpl.class);
 
-    private StockRepository stockRepository;
-    private ProductServiceClient productServiceClient;
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private final StockRepository stockRepository;
+    private final ProductServiceClient productServiceClient;
+    private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper mapper;
 
-    public StockServiceImpl(StockRepository stockRepository,
-                            KafkaTemplate<String, String> kafkaTemplate,
-                            ProductServiceClient productServiceClient, ObjectMapper mapper) {
-        this.stockRepository = stockRepository;
-        this.kafkaTemplate = kafkaTemplate;
-        this.productServiceClient = productServiceClient;
-        this.mapper = mapper;
-    }
-
+    @CircuitBreaker(name = "inventoryService", fallbackMethod = "handleStockFallback")
     @Override
     public boolean createStock(StockDTO stockDTO) {
         // check product available
+        System.out.println("Product service calling...");
         boolean checkProductExists = productServiceClient.checkProduct(stockDTO.getProductCode());
         if (checkProductExists) {
             // check if product stock already available
@@ -94,6 +90,7 @@ public class StockServiceImpl implements StockService {
         return false;
     }
 
+    @CircuitBreaker(name = "inventoryService", fallbackMethod = "handleStockFallback")
     @Override
     public boolean updateStock(StockDTO stockDTO) {
         boolean checkProductExists = productServiceClient.checkProduct(stockDTO.getProductCode());
@@ -118,6 +115,7 @@ public class StockServiceImpl implements StockService {
             topics = "order",
             groupId = "groupId"
     )
+    @CircuitBreaker(name = "inventoryService", fallbackMethod = "handleUpdateStockAfterPurchaseFallback")
     @Override
     public boolean updateStockAfterPurchase(ConsumerRecord<String, Object> order) throws JsonProcessingException {
         String orders = (String) order.value();
@@ -171,4 +169,11 @@ public class StockServiceImpl implements StockService {
         throw new InternalServerErrorExceptionHandler("Internal server error");
     }
 
+    public boolean handleStockFallback(StockDTO stockDTO, RuntimeException e) {
+        throw new InternalServerErrorExceptionHandler("Could not fetch product info.");
+    }
+
+    public boolean handleUpdateStockAfterPurchaseFallback(ConsumerRecord<String, Object> order, RuntimeException e) {
+        throw new InternalServerErrorExceptionHandler("Could not fetch product info.");
+    }
 }
