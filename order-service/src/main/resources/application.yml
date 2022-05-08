@@ -5,6 +5,8 @@ spring:
     import: optional:configserver:http://localhost:8888
   kafka:
     bootstrap-servers: kafka:29092
+  zipkin:
+    base-url: http://zipkins:9411/
   datasource:
     username: sa
     password: sa

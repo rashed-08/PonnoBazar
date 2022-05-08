@@ -5,6 +5,8 @@ spring:
     active: dev
   config:
     import: optional:configserver:http://localhost:8888
+  zipkin:
+    base-url: http://zipkins:9411/
 management:
   health:
     circuitbreakers:
