@@ -1,3 +1,3 @@
 # PonnoBazar
 ## PonnoBazar Architecture
-![product managment](https://user-images.githubusercontent.com/41707235/152029265-00e8f15a-2937-4992-863c-ba8283579671.PNG)
+![PonnoBazarNew](https://user-images.githubusercontent.com/41707235/170825877-c66efb29-d7d0-48a1-aed4-01be5e60c014.PNG)
