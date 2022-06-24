@@ -80,7 +80,7 @@ public class ProductServiceImpl implements ProductService {
 	@Cacheable("product")
 	public List<Product> getProducts(Pageable pageable) {
 		Page<Product> getPagedProducts = productRepository.findAll(pageable);
-		if (getPagedProducts.hasContent()) {
+		if (getPagedProducts != null && getPagedProducts.hasContent()) {
 			List<Product> products = getPagedProducts.getContent()
 					.stream().filter(x -> x.getIsActive())
 					.collect(Collectors.toList());

@@ -14,6 +14,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,7 +46,6 @@ public class ProductServiceTests {
 
     @Test
     @DisplayName("Cannot Create Product")
-    @Disabled
     public void cannotCreateProductTest() {
         ProductDto productDto = generateProductDto();
         productDto.setProductCode("");
@@ -75,6 +80,59 @@ public class ProductServiceTests {
         assertThat(productService.checkProductExists("")).isFalse();
     }
 
+    @Test
+    @DisplayName("Get All Product Test")
+    public void  getAllProductTest() {
+        List<Product> allProducts = generateProductList();
+        Pageable page = PageRequest.of(1, 4);
+        when(productRepository.findAll(page)).thenReturn(new PageImpl<>(allProducts));
+        assertEquals(3, productService.getProducts(page).size());
+    }
+
+    @Test(expected = NotFoundException.class)
+    @DisplayName("Get All Product Test")
+    public void  getAllProductNotFoundTest() {
+        Pageable page = PageRequest.of(1, 4);
+        when(productService.getProducts(any())).thenThrow(new NotFoundException("Not Found"));
+        assertEquals("Product doesn't exist.", productService.getProducts(page));
+    }
+
+    @Test
+    @DisplayName("Update Product Test")
+    public void updateProductTest() {
+        Product product = generateProduct();
+        when(productRepository.findByProductCode(anyString())).thenReturn(product);
+        product.setProductName("Test Product - 1");
+        assertThat(productService.updateProduct(product.getProductCode(), product)).isTrue();
+        assertEquals("Test Product - 1", product.getProductName());
+    }
+
+    @Test(expected = InternalServerErrorException.class)
+    @DisplayName("Cannot Update Product Test")
+    public void cannotUpdateProductTest() {
+        Product product = generateProduct();
+        when(productService.updateProduct(null, product)).thenThrow(new InternalServerErrorException("Cannot Update with null product code"));
+        when(productService.updateProduct("", product)).thenThrow(new InternalServerErrorException("Cannot Update with empty product code"));
+        when(productService.updateProduct(product.getProductCode(), null)).thenThrow(new InternalServerErrorException("Cannot Update without prodcut"));
+        assertEquals("Product can't update.", productService.updateProduct(anyString(),product));
+    }
+
+    @Test
+    @DisplayName("Delete Product Test")
+    public void deleteProductTest() {
+        Product product = generateProduct();
+        when(productRepository.findByProductCode(anyString())).thenReturn(product);
+        assertThat(productService.deleteProduct(product.getProductCode())).isTrue();
+        assertEquals(false, product.getIsActive());
+    }
+
+    @Test
+    @DisplayName("Cannot Delete Product Test")
+    public void cannotDeleteProductTest() {
+        assertThat(productService.deleteProduct("")).isFalse();
+        assertThat(productService.deleteProduct(null)).isFalse();
+    }
+
 
     private ProductDto generateProductDto() {
         ProductDto testProduct = new ProductDto();
@@ -94,6 +152,15 @@ public class ProductServiceTests {
         testProduct.setSkuCode("test-123");
         testProduct.setSellPrice(13);
         return testProduct;
+    }
+
+    private List<Product> generateProductList() {
+        return List.of(
+                new Product("test-001", "Test 1", "sku-1", 10, 12, "image1.jgp", true),
+                new Product("test-002", "Test 2", "sku-2", 7, 10, "image2.jgp", true),
+                new Product("test-003", "Test 3", "sku-3", 23, 27, "image3.jgp", true),
+                new Product("test-004", "Test 4", "sku-4", 2, 12, "image4.jgp", false)
+        );
     }
 
 }
