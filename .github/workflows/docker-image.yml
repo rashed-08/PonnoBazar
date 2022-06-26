@@ -1,4 +1,4 @@
-name: Product_Service
+name: Ponno Bazar CI with Maven
 
 on:
   push:
@@ -10,6 +10,16 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker-compose up -d
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build Product Service
+      run: mvn -B package --file product-service/pom.xml
+    - name: Build Inventory Service
+      run: mvn -B package --file inventory-service/pom.xml
+    - name: Build Order Service
+      run: mvn -B package --file order-service/pom.xml      
