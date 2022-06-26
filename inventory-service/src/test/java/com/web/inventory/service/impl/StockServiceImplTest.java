@@ -153,6 +153,15 @@ class StockServiceImplTest {
         assertThrows(NotFoundException.class, () -> stockService.updateStock(stockDTO), "Could not found stock.");
     }
 
+    @Test
+    @DisplayName("Delete Stock Test")
+    void deleteStockTest() {
+        Stock stock = prepareStock();
+        when(stockRepository.findStockByProductCode(anyString())).thenReturn(stock);
+        assertThat(stockService.deleteStock(stock.getProductCode())).isTrue();
+    }
+
+
     private StockDTO prepareStockDto() {
         return new StockDTO(
                 "test-001",

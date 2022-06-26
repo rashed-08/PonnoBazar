@@ -156,11 +156,12 @@ public class StockServiceImpl implements StockService {
         Stock stock = getStock(productCode);
         if (stock != null) {
             stockRepository.delete(stock);
-            Stock deletedStock = getStock(productCode);
-            if (deletedStock == null) {
-                return true;
-            }
-            throw new InternalServerErrorExceptionHandler("Can't delete stock");
+            return true;
+//            Stock deletedStock = getStock(productCode);
+//            if (deletedStock == null) {
+//
+//            }
+//            throw new InternalServerErrorExceptionHandler("Can't delete stock");
         }
         throw new InternalServerErrorExceptionHandler("Internal server error");
     }
