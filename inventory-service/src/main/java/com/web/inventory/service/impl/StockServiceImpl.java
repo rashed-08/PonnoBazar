@@ -39,7 +39,6 @@ public class StockServiceImpl implements StockService {
     @Override
     public boolean createStock(StockDTO stockDTO) {
         // check product available
-        System.out.println("Product service calling...");
         boolean checkProductExists = productServiceClient.checkProduct(stockDTO.getProductCode());
         if (checkProductExists) {
             // check if product stock already available
@@ -56,7 +55,6 @@ public class StockServiceImpl implements StockService {
                 if (savedStock.getProductCode().equals(stockDTO.getProductCode())) {
                     return true;
                 }
-                throw new InternalServerErrorExceptionHandler("Can't create product stock.");
             }
             throw new InternalServerErrorExceptionHandler("Stock already added. Please update the stock.");
         }
@@ -104,9 +102,7 @@ public class StockServiceImpl implements StockService {
                 if (updatedStock.getProductCode().equals(stockDTO.getProductCode())) {
                     return true;
                 }
-                throw new InternalServerErrorExceptionHandler("Can't update stock");
             }
-            throw new InternalServerErrorExceptionHandler("Internal server error");
         }
         throw new InternalServerErrorExceptionHandler("Can't fetch product.");
     }
