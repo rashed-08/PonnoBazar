@@ -6,14 +6,17 @@ import com.web.product.exception.NotFoundException;
 import com.web.product.model.Product;
 import com.web.product.repository.ProductRepository;
 import com.web.product.service.impl.ProductServiceImpl;
-import org.junit.Test;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -23,9 +26,10 @@ import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class ProductServiceTests {
 
     @InjectMocks
@@ -36,7 +40,6 @@ public class ProductServiceTests {
 
     @Test
     @DisplayName("Create Product Test")
-    @Disabled
     public void createProductTest() {
         ProductDto productDto = generateProductDto();
         Product product = generateProduct();
@@ -56,14 +59,14 @@ public class ProductServiceTests {
     @DisplayName("Get Product test")
     public void  getProductTest() {
         Product product = generateProduct();
-        Mockito.when(productRepository.findByProductCode("test-123")).thenReturn(product);
+        Mockito.when(productRepository.findByProductCode(anyString())).thenReturn(product);
         assertEquals("test-123", productService.getProduct(product.getProductCode()).getProductCode()); //  product.getProductCode()
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     @DisplayName("Get Product Not Found test")
     public void  getProductNotFoundTest() {
-        when(productService.getProduct("")).thenThrow(new NotFoundException("Desired product not available."));
+        assertThrows(NotFoundException.class, () -> productService.getProduct(""), "Desired product not available.");
     }
 
     @Test
@@ -89,12 +92,11 @@ public class ProductServiceTests {
         assertEquals(3, productService.getProducts(page).size());
     }
 
-    @Test(expected = NotFoundException.class)
-    @DisplayName("Get All Product Test")
+    @Test
+    @DisplayName("Get All Product Not Found Test")
     public void  getAllProductNotFoundTest() {
         Pageable page = PageRequest.of(1, 4);
-        when(productService.getProducts(any())).thenThrow(new NotFoundException("Not Found"));
-        assertEquals("Product doesn't exist.", productService.getProducts(page));
+        assertThrows(NotFoundException.class, () -> productService.getProducts(page), "Product doesn't exist.");
     }
 
     @Test
@@ -107,14 +109,13 @@ public class ProductServiceTests {
         assertEquals("Test Product - 1", product.getProductName());
     }
 
-    @Test(expected = InternalServerErrorException.class)
+    @Test
     @DisplayName("Cannot Update Product Test")
     public void cannotUpdateProductTest() {
         Product product = generateProduct();
-        when(productService.updateProduct(null, product)).thenThrow(new InternalServerErrorException("Cannot Update with null product code"));
-        when(productService.updateProduct("", product)).thenThrow(new InternalServerErrorException("Cannot Update with empty product code"));
-        when(productService.updateProduct(product.getProductCode(), null)).thenThrow(new InternalServerErrorException("Cannot Update without prodcut"));
-        assertEquals("Product can't update.", productService.updateProduct(anyString(),product));
+        assertThrows(InternalServerErrorException.class, () -> productService.updateProduct(null, product),"Product can't update.");
+        assertThrows(InternalServerErrorException.class, () -> productService.updateProduct("", product),"Product can't update.");
+        assertThrows(InternalServerErrorException.class, () -> productService.updateProduct(product.getProductCode(), null), "Product can't update.");
     }
 
     @Test
