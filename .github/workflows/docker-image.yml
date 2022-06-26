@@ -18,8 +18,10 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build Product Service
-      run: mvn -B package --file product-service/pom.xml
+      run: cd product-service && mvn clean install
     - name: Build Inventory Service
-      run: mvn -B package --file inventory-service/pom.xml
+      run: cd inventory-service && mvn clean install
     - name: Build Order Service
-      run: mvn -B package --file order-service/pom.xml      
+      run: cd order-service && mvn clean install   
+    - name: Build & push Docker image
+      run: docker-compose up -d    
