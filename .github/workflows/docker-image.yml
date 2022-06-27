@@ -23,5 +23,9 @@ jobs:
       run: cd inventory-service && mvn clean install
     - name: Build Order Service
       run: cd order-service && mvn clean install   
+    - name: Build Gateway Service
+      run: cd gateway-service && mvn clean install
+    - name: Build Eureka Service
+      run: cd eureka-service && mvn clean install
     - name: Build & push Docker image
-      run: docker-compose up -d    
+      run: docker-compose up -d
