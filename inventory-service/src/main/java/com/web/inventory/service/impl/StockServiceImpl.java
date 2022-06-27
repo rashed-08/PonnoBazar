@@ -72,20 +72,20 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public Stock getStock(String productCode) {
-        Stock stock = stockRepository.findStockByProductCode(productCode);
-        if (stock != null) {
-            return stock;
+        if (productCode.length() > 0) {
+            Stock stock = stockRepository.findStockByProductCode(productCode);
+            if (stock != null) {
+                return stock;
+            }
+            throw new NotFoundException("Could not found stock.");
         }
-        throw new NotFoundException("Could not found stock.");
+        throw new InternalServerErrorExceptionHandler("Product code can't be empty.");
     }
 
     @Override
     public boolean isStockAvailable(String productCode, Integer quantity) {
         Stock stock = getStock(productCode);
-        if (stock.getQuantity() > 0 && quantity< stock.getQuantity()) {
-            return true;
-        }
-        return false;
+        return stock.getQuantity() > 0 && quantity < stock.getQuantity();
     }
 
     @CircuitBreaker(name = "inventoryService", fallbackMethod = "handleStockFallback")

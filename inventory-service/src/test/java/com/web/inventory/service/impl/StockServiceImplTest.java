@@ -90,6 +90,13 @@ class StockServiceImplTest {
     }
 
     @Test
+    @DisplayName("Get Product Code Empty Test")
+    public void getProductCodeEmptyTest() {
+        assertThrows(InternalServerErrorExceptionHandler.class, () -> stockService.getStock(""), "Product code can't be empty.");
+    }
+
+
+    @Test
     @DisplayName("Get Stock Available Test")
     void getAvailableStockTest() {
         Stock stock = prepareStock();
