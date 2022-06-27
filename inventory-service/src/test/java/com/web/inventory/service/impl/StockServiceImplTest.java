@@ -79,14 +79,14 @@ class StockServiceImplTest {
     void getStockTest() {
         Stock stock = prepareStock();
         when(stockRepository.findStockByProductCode(anyString())).thenReturn(stock);
-        assertThat(stockService.getStock(anyString()).getProductCode()).isEqualTo("test-001");
-        assertThat(stockService.getStock(anyString()).getQuantity()).isEqualTo(10);
+        assertThat(stockService.getStock(stock.getProductCode()).getProductCode()).isEqualTo("test-001");
+        assertThat(stockService.getStock(stock.getProductCode()).getQuantity()).isEqualTo(10);
     }
 
     @Test
     @DisplayName("Get Empty Stock Test")
     public void getEmptyStockTest() {
-        assertThrows(NotFoundException.class, () -> stockService.getStock(anyString()), "Could not found stock.");
+        assertThrows(NotFoundException.class, () -> stockService.getStock("test"), "Could not found stock.");
     }
 
     @Test
@@ -101,7 +101,7 @@ class StockServiceImplTest {
     void getAvailableStockTest() {
         Stock stock = prepareStock();
         when(stockRepository.findStockByProductCode(anyString())).thenReturn(stock);
-        assertThat(stockService.isStockAvailable(anyString(), 4)).isTrue();
+        assertThat(stockService.isStockAvailable(stock.getProductCode(), 4)).isTrue();
     }
 
     @Test
