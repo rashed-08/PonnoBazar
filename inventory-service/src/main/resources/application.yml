@@ -35,4 +35,4 @@ resilience4j:
         waitDurationInOpenState: 5s
         slidingWindowType: COUNT_BASED
 server:
-  port: 9092
+  port: 9091

@@ -5,6 +5,8 @@ import com.web.product.exception.InternalServerErrorException;
 import com.web.product.exception.NotFoundException;
 import com.web.product.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -27,6 +29,8 @@ public class ProductServiceImpl implements ProductService {
 	
 	private final ProductRepository productRepository;
 
+	private final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
 	@Autowired
 	public ProductServiceImpl(ProductRepository productRepository) {
 		this.productRepository = productRepository;
@@ -36,6 +40,7 @@ public class ProductServiceImpl implements ProductService {
 	@CacheEvict(value = "product", allEntries = true)
 	public boolean createProduct(ProductDto productDto) {
 		ModelMapper modelMapper = new ModelMapper();
+		logger.info("product_dto: {}", productDto.toString());
 		if ((productDto.getProductCode() != null) && (!productDto.getProductCode().equals(""))) {
 			Product product = modelMapper.map(productDto, Product.class);
 			try {
@@ -43,36 +48,44 @@ public class ProductServiceImpl implements ProductService {
 				productRepository.save(product);
 				Product saveProduct = getProduct(product.getProductCode());
 				if (saveProduct.getProductCode().equals(product.getProductCode())) {
+					logger.info("product_save");
 					return true;
 				}
 			} catch (InternalServerErrorException e) {
+				logger.error("product save internal server error");
 				throw new InternalServerErrorException("Can't create product");
 			}
 		}
+		logger.error("product code empty or null, could not save");
 		return false;
 	}
 
 	@Override
 	@Cacheable("product")
 	public Product getProduct(String productCode) {
+		logger.info("product_code: {}", productCode);
 		if (productCode != null && !productCode.equals("")) {
 			Product product = productRepository.findByProductCode(productCode);
 			if (product != null && product.getIsActive()) {
 				return product;
 			}
+			logger.error("product is null or not activated. could not fetch");
 			throw new NotFoundException("Desired product not available.");
 		}
+		logger.error("product code empty or null, get product");
 		throw new NotFoundException("Desired product not available.");
 	}
 
 	@Override
 	public boolean checkProductExists(String productCode) {
+		logger.info("product_code: {}", productCode);
 		if (productCode != null && !productCode.equals("")) {
 			Product product = getProduct(productCode);
 			if (product != null) {
 				return true;
 			}
 		}
+		logger.error("product code empty or null, check product exist");
 		return false;
 	}
 
@@ -86,12 +99,14 @@ public class ProductServiceImpl implements ProductService {
 					.collect(Collectors.toList());
 			return products;
 		}
+		logger.error("Product list not available");
 		throw new NotFoundException("Product doesn't exist.");
 	}
 
 	@Override
 	@CachePut(value = "product", key = "#product.productCode")
 	public boolean updateProduct(String productCode, Product product) {
+		logger.info("product_code: {}, Product: {}", productCode, product);
 		if (productCode != null && !productCode.equals("") && product != null) {
 			Product existingProduct = getProduct(productCode);
 			if (existingProduct != null) {
@@ -99,14 +114,17 @@ public class ProductServiceImpl implements ProductService {
 					productRepository.save(product);
 					return true;
 				}
+				logger.info("Empty product code, could not update");
 			}
 		}
+		logger.error("product code empty or null and not empty product");
 		throw new InternalServerErrorException("Product can't update.");
 	}
 
 	@Override
 	@CacheEvict(value = "product", allEntries = true)
 	public boolean deleteProduct(String productCode) {
+		logger.info("product_code: {}", productCode);
 		if (productCode != null && !productCode.equals("")) {
 			Product existingProduct = getProduct(productCode);
 			if (existingProduct != null) {
@@ -114,7 +132,9 @@ public class ProductServiceImpl implements ProductService {
 				productRepository.save(existingProduct);
 				return true;
 			}
+			logger.error("product does not exist, could not delete");
 		}
+		logger.error("product code empty or null, could not delete");
 		return false;
 	}
 }
