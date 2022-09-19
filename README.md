@@ -5,6 +5,7 @@
 
 ## Prerequisite ##
 * Java 11
+* Maven
 * Docker
 * Docker-compose
 
